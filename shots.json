@@ -1,5 +1,6 @@
 [
-  { "file": "1-checklist.jpg", "path": "/", "viewport": { "width": 1280, "height": 800 } },
-  { "file": "2-silver.jpg", "path": "/", "grade": "silver", "viewport": { "width": 1280, "height": 800 } },
-  { "file": "3-bronze.jpg", "path": "/", "grade": "bronze", "scroll": 1400, "viewport": { "width": 1280, "height": 800 } }
+  { "file": "1-checklist-guide.jpg", "path": "/#view=checklist&filter=all&spoilers=off&trophy=the-shootist", "viewport": { "width": 1280, "height": 800 } },
+  { "file": "2-roadmap.jpg", "path": "/#view=roadmap&filter=all&spoilers=off", "viewport": { "width": 1280, "height": 800 } },
+  { "file": "3-spoilers-missable.jpg", "path": "/#view=checklist&filter=missable&spoilers=on", "viewport": { "width": 1280, "height": 800 } },
+  { "file": "4-missable-detail.jpg", "path": "/#view=checklist&filter=all&spoilers=off&trophy=road-to-rehabilitation", "viewport": { "width": 1280, "height": 800 } }
 ]

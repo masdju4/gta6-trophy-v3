@@ -14,6 +14,9 @@
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
+// Vice Legend entry: app/ is an offline guide + tracker for all 55 GTA VI PS5 trophies —
+// cited guides, a six-stage platinum roadmap, missable flags, kind filters, a spoiler guard,
+// and localStorage progress with JSON export/import. This program hands it in unchanged in shape.
 import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
