@@ -1,6 +1,6 @@
 [
-  { "file": "1-checklist-guide.jpg", "path": "/#view=checklist&filter=all&spoilers=off&trophy=the-shootist", "viewport": { "width": 1280, "height": 800 } },
-  { "file": "2-roadmap.jpg", "path": "/#view=roadmap&filter=all&spoilers=off", "viewport": { "width": 1280, "height": 800 } },
-  { "file": "3-spoilers-missable.jpg", "path": "/#view=checklist&filter=missable&spoilers=on", "viewport": { "width": 1280, "height": 800 } },
-  { "file": "4-missable-detail.jpg", "path": "/#view=checklist&filter=all&spoilers=off&trophy=road-to-rehabilitation", "viewport": { "width": 1280, "height": 800 } }
+  { "file": "1-cover.jpg", "path": "/#view=checklist&filter=all&spoilers=off&trophy=trust", "viewport": { "width": 1280, "height": 800 }, "note": "Cover: checklist with the story trophy Trust's guide and its three cited source links open; 8/55 progress, grade badges, filters and checked boxes." },
+  { "file": "2-roadmap.jpg", "path": "/#view=roadmap&filter=all&spoilers=off", "viewport": { "width": 1280, "height": 800 }, "note": "The platinum roadmap: six ordered stages plus the missable watchlist, every missable trophy flagged." },
+  { "file": "3-missable.jpg", "path": "/#view=checklist&filter=missable&spoilers=off", "viewport": { "width": 1280, "height": 800 }, "note": "Missable filter active: the 10 missable trophies with red warning badges and grade badges." },
+  { "file": "4-spoiler.jpg", "path": "/#view=checklist&filter=story&spoilers=on", "viewport": { "width": 1280, "height": 800 }, "note": "Spoiler guard ON: unearned story names and descriptions masked to ??? while grades stay visible; earned story trophies revealed and checked; Story filter, 8/55 progress saved." }
 ]
