@@ -1,39 +1,93 @@
-// A working gta6-trophy-guide-01 entry (Node 22, standard library only): the guide is this directory's app/ folder,
-// plain static files a browser opens at app/index.html (ES modules, CSS, no build step), offline: it loads nothing
-// over the network, and its trophy list and guides are app/data/trophies.json. The program hands it in: it copies app/
-// and screenshots/ from beside this file to /output and writes /output/dossier.json, the summary the judge reads (your
-// screenshots, the first load's files and bytes, and your source), with the vendored make.fun library. Leave
-// vendor/makefun-frontend.ts as it is: the scorer requires dossier.json to be byte for byte what its own copy writes.
+// main.ts — the Vice Legend submission program (Node 22, standard library only).
+// It hands the entry in: copy this repository's app/ and screenshots/ into the output
+// directory, then write <out>/dossier.json as the exact bytes the vendored make.fun
+// library's buildDossier returns. The repository root is resolved from this file's own
+// URL, never the working directory, so the program behaves the same wherever it is run.
+// Output is deterministic: no timestamps, no random values, a clean copy each run.
 //
-// Only the plumbing, not a winner: a plain checklist of the 55 trophies with a one-line hint each. Write a real guide
-// for every trophy in your own words, a roadmap to the platinum, filters and a spoiler setting in app/, put 3 or 4 PNG
-// or JPEG screenshots of it in screenshots/ (the first by name is the cover; shots.json says which views this
-// starter's were taken of), and run it.
-//
-// Serve it locally with `node serve.ts`, then open http://localhost:8080.
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// Run it with Node 22.18+ (which executes .ts directly):
+//   MAKEFUN_OUTPUT_DIR=out node main.ts        (outside the grader, out/ stands in for /output)
 
-// Vice Legend entry: app/ is an offline guide + tracker for all 55 GTA VI PS5 trophies —
-// cited guides, a six-stage platinum roadmap, missable flags, kind filters, a spoiler guard,
-// and localStorage progress with JSON export/import. This program hands it in unchanged in shape.
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-frontend.ts';
 
-const here = fileURLToPath(new URL('.', import.meta.url));
-const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+// The scorer's caps: text_max_bytes shapes the dossier text; the rest only refuse an
+// entry the scorer would refuse, so passing them makes this program fail where it would.
+const DOSSIER_CAPS = {
+  text_max_bytes: 163840,
+  screenshots: { max: 4, max_bytes: 262144 },
+  app_max_files: 993,
+  app_max_bytes: 50331648,
+} as const;
 
-mkdirSync(out, { recursive: true });
-cpSync(join(here, 'app'), join(out, 'app'), { recursive: true });
-mkdirSync(join(out, 'screenshots'), { recursive: true });
-if (existsSync(join(here, 'screenshots'))) cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
+const MIN_TROPHIES = 55;
 
-// The scorer's own caps (reference/gate.json): only text_max_bytes shapes the bytes; the others refuse an entry the
-// scorer would refuse (more than 4 screenshots or one over 256 KiB; more than 993 files and directories in app/ or
-// 48 MiB of app files: app/ counts beside /output's own 1000-entry cap, its screenshots/ and dossier.json).
-writeFileSync(
-  join(out, 'dossier.json'),
-  buildDossier(out, { text_max_bytes: 163840, screenshots: { max: 4, max_bytes: 262144 }, app_max_files: 993, app_max_bytes: 50331648 }),
-);
+// The repository root is the directory holding this file, derived from its URL.
+function resolveRepoRoot(): string {
+  return fileURLToPath(new URL('.', import.meta.url));
+}
+
+// Fail loudly unless the guide's essential files are present and the trophy data is
+// sound: app/index.html and app/data/trophies.json must exist, the JSON must parse,
+// and it must hold at least the official 55 trophies.
+function assertGuideData(appDir: string): void {
+  const indexHtml = join(appDir, 'index.html');
+  if (!existsSync(indexHtml)) {
+    throw new Error(`submission refused: missing ${indexHtml}`);
+  }
+  const trophiesPath = join(appDir, 'data', 'trophies.json');
+  if (!existsSync(trophiesPath)) {
+    throw new Error(`submission refused: missing ${trophiesPath}`);
+  }
+  let data: unknown;
+  try {
+    data = JSON.parse(readFileSync(trophiesPath, 'utf8'));
+  } catch (err) {
+    throw new Error(`submission refused: ${trophiesPath} is not valid JSON (${(err as Error).message})`);
+  }
+  const trophies = (data as { trophies?: unknown })?.trophies;
+  if (!Array.isArray(trophies)) {
+    throw new Error(`submission refused: ${trophiesPath} has no "trophies" array`);
+  }
+  if (trophies.length < MIN_TROPHIES) {
+    throw new Error(`submission refused: ${trophiesPath} holds ${trophies.length} trophies, need at least ${MIN_TROPHIES}`);
+  }
+}
+
+// Replace a destination tree with a fresh copy of the source, so a previous run's
+// leftovers can never change the dossier. A missing source is simply skipped.
+function copyTree(src: string, dest: string): void {
+  rmSync(dest, { recursive: true, force: true });
+  if (existsSync(src)) {
+    cpSync(src, dest, { recursive: true });
+  }
+}
+
+// Copy the entry's files into out/ and write the dossier the judge reads.
+function buildSubmission(repoRoot: string, outDir: string): void {
+  const appSrc = join(repoRoot, 'app');
+  assertGuideData(appSrc);
+
+  mkdirSync(outDir, { recursive: true });
+  copyTree(appSrc, join(outDir, 'app'));
+  copyTree(join(repoRoot, 'screenshots'), join(outDir, 'screenshots'));
+
+  const dossier = buildDossier(outDir, DOSSIER_CAPS);
+  writeFileSync(join(outDir, 'dossier.json'), dossier);
+}
+
+function main(): void {
+  const repoRoot = resolveRepoRoot();
+  const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+  buildSubmission(repoRoot, outDir);
+  console.log(`submission written to ${outDir} (app/, screenshots/, dossier.json)`);
+}
+
+try {
+  main();
+} catch (err) {
+  console.error((err as Error).message);
+  process.exit(1);
+}
